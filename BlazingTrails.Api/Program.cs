@@ -1,9 +1,16 @@
 using BlazingTrails.Api.Persistence;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 {
     builder.Services.AddControllers();
+
+    builder.Services.AddFluentValidationAutoValidation()
+        .AddFluentValidationClientsideAdapters()
+        .AddValidatorsFromAssembly(Assembly.Load("BlazingTrails.Shared"));
 
     builder.Services.AddDbContext<BlazingTrailsContext>(options =>
     {

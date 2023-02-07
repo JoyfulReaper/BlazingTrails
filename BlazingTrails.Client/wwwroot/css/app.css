@@ -4,7 +4,7 @@
     color: red;
 }
 
-input.invalid,
+/*input.invalid,
 textarea.invalid,
 select.invalid {
     border-color: red;
@@ -15,6 +15,7 @@ text.valid.modified,
 select.valid.modified {
     border-color: green;   
 }
+*/
 
 #blazor-error-ui {
     background: lightyellow;

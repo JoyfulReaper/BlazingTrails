@@ -40,6 +40,8 @@ public class TrailValidator : AbstractValidator<TrailDto>
             .WithMessage("Please add a route instruction");
         RuleFor(t => t.Length).GreaterThan(0)
             .WithMessage("Please enter a length");
+        RuleFor(t => t.TimeInMinutes).GreaterThan(0)
+            .WithMessage("Please enter a time");
 
         RuleForEach(t => t.Route).SetValidator(new RouteInstructionValidator());
     }

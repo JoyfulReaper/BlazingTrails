@@ -58,8 +58,7 @@
         @{
             var i = 0;
         }
-        @foreach (var routeInstruction in _trail.Route)
-        {
+        @foreach (var routeInstruction in _trail.Route) {
             i++;
             routeInstruction.Stage = i;
 
@@ -119,10 +118,13 @@
     private IBrowserFile? _trailImage;
     private EditContext _editContext = default!;
 
-    [Parameter]
-    public Func<TrailDto, IBrowserFile?, Task> OnSubmit { get; set; }
+    [Parameter, EditorRequired]
+    public Func<TrailDto, IBrowserFile?, Task> OnSubmit { get; set; } = default!;
 
-    public void ResetForm()
+    [Parameter]
+    public TrailDto? Trail { get; set; }
+
+    public void ResetForm() 
     {
         _trail = new TrailDto();
         _editContext = new EditContext(_trail);
@@ -130,10 +132,29 @@
         _trailImage = null;
     }
 
-    protected override void OnInitialized()
+    protected override void OnParametersSet() 
     {
         _editContext = new EditContext(_trail);
         _editContext.SetFieldCssClassProvider(new BootstrapCssClassProvider());
+
+        if(Trail != null)
+        {
+            _trail.Id = Trail.Id;
+            _trail.Name = Trail.Name;
+            _trail.Description = Trail.Description;
+            _trail.Location = Trail.Location;
+            _trail.Image = Trail.Image;
+            _trail.ImageAction = ImageAction.None;
+            _trail.Length = Trail.Length;
+            _trail.TimeInMinutes = Trail.TimeInMinutes;
+
+            _trail.Route.Clear();
+            _trail.Route.AddRange(Trail.Route.Select(ri => new TrailDto.RouteInstruction
+                {
+                    Stage = ri.Stage,
+                    Description = ri.Description,
+                }));
+        }
     }
 
     private void LoadTrailImage(InputFileChangeEventArgs e)

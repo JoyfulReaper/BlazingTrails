@@ -26,12 +26,28 @@
                        id="trailLocation" />
             <ValidationMessage For="@(() => _trail.Location)" />
         </FormFieldSet>
-        <FormFieldSet>
+        <FormFieldSet Width="col-6">
             <label for="trailImage" class="fw-bold text-secondary">Image</label>
-            <InputFile OnChange="LoadTrailImage"
-                       class="form-control"
-                       id="trailImage"
-                       accept=".png,.jpg,.jpeg,.webp" />
+            @if (string.IsNullOrWhiteSpace(_trail.Image))
+            {
+                <InputFile OnChange="LoadTrailImage"
+                           class="form-control"
+                           id="trailImage"
+                           accept=".png,.jpg,.jpeg,.webp" />
+            }
+            else
+            {
+                <div class="card bg-dark text-white">
+                    <img src="images/@_trail.Image" />
+                    <div class="card-img-overlay">
+                        <button class="btn btn-primary btn-sm"
+                            @onclick="RemoveTrailImage">
+                            Remove
+                        </button>
+                    </div>
+                </div>
+            }
+
         </FormFieldSet>
     </FormSection>
 
@@ -58,7 +74,8 @@
         @{
             var i = 0;
         }
-        @foreach (var routeInstruction in _trail.Route) {
+        @foreach (var routeInstruction in _trail.Route)
+        {
             i++;
             routeInstruction.Stage = i;
 
@@ -124,7 +141,7 @@
     [Parameter]
     public TrailDto? Trail { get; set; }
 
-    public void ResetForm() 
+    public void ResetForm()
     {
         _trail = new TrailDto();
         _editContext = new EditContext(_trail);
@@ -132,12 +149,12 @@
         _trailImage = null;
     }
 
-    protected override void OnParametersSet() 
+    protected override void OnParametersSet()
     {
         _editContext = new EditContext(_trail);
         _editContext.SetFieldCssClassProvider(new BootstrapCssClassProvider());
 
-        if(Trail != null)
+        if (Trail != null)
         {
             _trail.Id = Trail.Id;
             _trail.Name = Trail.Name;
@@ -149,8 +166,7 @@
             _trail.TimeInMinutes = Trail.TimeInMinutes;
 
             _trail.Route.Clear();
-            _trail.Route.AddRange(Trail.Route.Select(ri => new TrailDto.RouteInstruction
-                {
+            _trail.Route.AddRange(Trail.Route.Select(ri => new TrailDto.RouteInstruction {
                     Stage = ri.Stage,
                     Description = ri.Description,
                 }));
@@ -158,7 +174,16 @@
     }
 
     private void LoadTrailImage(InputFileChangeEventArgs e)
-        => _trailImage = e.File;
+    {
+        _trailImage = e.File;
+        _trail.ImageAction = ImageAction.Add;
+    }
+
+    private void RemoveTrailImage()
+    {
+        _trail.Image = null;
+        _trail.ImageAction = ImageAction.Remove;
+    }
 
     private async Task SubmitForm()
         => await OnSubmit(_trail, _trailImage);

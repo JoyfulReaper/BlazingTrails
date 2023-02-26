@@ -27,7 +27,7 @@ else
         <ErrorAlert Message="@_errorMessage" />
     }
 
-    <TrailForm OnSubmit="SubmitEditedTrail" />
+    <TrailForm Trail="_trail" OnSubmit="SubmitEditedTrail" />
 }
 
 @code {

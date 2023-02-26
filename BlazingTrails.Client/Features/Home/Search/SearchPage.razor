@@ -1,8 +1,5 @@
 ﻿@page "/search/{SearchTerm}"
-@page "/search/{SearchTerm}/maxlength/{MaxLength:int}"
-
-@inject HttpClient Http
-@inject NavigationManager NavManager
+@inject IMediator Mediator
 
 <PageTitle>Search Trails - Blazing Trails</PageTitle>
 
@@ -19,11 +16,11 @@
 </nav>
 
 <h3>Search Results for "@SearchTerm"</h3>
-<SearchFilter SearchTerm="@SearchTerm" 
-    MaxLength="MaxLength" 
-    MaxTime="MaxTime" />
+<SearchFilter SearchTerm="@SearchTerm"
+              MaxLength="MaxLength"
+              MaxTime="MaxTime" />
 
-@if(_searchResults == null)
+@if (_searchResults == null)
 {
     <p>Loading Search Results....</p>
 }
@@ -56,10 +53,23 @@ else
     {
         try
         {
-            var allTrails = await Http.GetFromJsonAsync<IEnumerable<Trail>>("trails/trail-data.json");
-            _searchResults = allTrails!.Where(t => t.Name.Contains(SearchTerm, StringComparison.CurrentCultureIgnoreCase) ||
-                t.Location.Contains(SearchTerm, StringComparison.CurrentCultureIgnoreCase));
+            var response = await Mediator.Send(new GetTrailsRequest());
+            var allTrails = response.Trails.Select(x => new Trail
+                {
+                    Id = x.Id,
+                    Name = x.Name,
+                    Image = x.Image,
+                    Description = x.Description,
+                    Location = x.Location,
+                    Length = x.Length,
+                    TimeInMinutes = x.TimeInMinutes
+                });
+
+            _searchResults = allTrails.Where(x => x.Name.Contains(SearchTerm, StringComparison.CurrentCultureIgnoreCase)
+                                           || x.Location.Contains(SearchTerm, StringComparison.CurrentCultureIgnoreCase));
             _cachedSearchResults = _searchResults;
+
+            UpdateFilters();
         }
         catch (HttpRequestException ex)
         {
@@ -68,26 +78,15 @@ else
     }
 
     protected override void OnParametersSet()
-    {
-        UpdateFilters();
-        
-        @*if(_cachedSearchResults.Any() && MaxLength.HasValue)
-        {
-            _searchResults = _cachedSearchResults.Where(t => t.Length <= MaxLength);
-        }
-        else if (_cachedSearchResults.Any()
-            && MaxLength is null)
-        {
-            _searchResults = _cachedSearchResults;
-        }*@
-    }
+        => UpdateFilters();
+
 
     private void HandleTrailSelected(Trail trail) => _selectedTrail = trail;
 
     private void UpdateFilters()
     {
         var filters = new List<Func<Trail, bool>>();
-            
+
         if (MaxLength is not null && MaxLength > 0)
         {
             filters.Add(t => t.Length <= MaxLength);
@@ -97,7 +96,7 @@ else
         {
             filters.Add(t => t.TimeInMinutes <= MaxTime * 60);
         }
-        
+
         if (filters.Any())
         {
             _searchResults = _cachedSearchResults.Where(trail => filters.All(filter => filter(trail)));

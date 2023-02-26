@@ -6,7 +6,7 @@ namespace BlazingTrails.Shared.Features.ManageTrails.EditTrail;
 public record EditTrailRequest(TrailDto Trail) : IRequest<EditTrailRequest.Response>
 {
     public const string RouteTemplate = "/api/trails";
-    public record Response(bool isSuccess);
+    public record Response(bool IsSuccess);
 }
 
 public class EditTrailRequestValidator : AbstractValidator<EditTrailRequest>

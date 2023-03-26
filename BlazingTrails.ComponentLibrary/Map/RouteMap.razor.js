@@ -17,7 +17,7 @@
         let line = L.polyline(hostElement.waypoints.map(m => m.getLatLng()), { color: 'var(--brand)' }).addTo(hostElement.map);
         hostElement.lines.push(line);
 
-        routeMapComponent.invokeMethodAsync('WaypointAdded', e.latlang.lat, e.latlang.lng);
+        routeMapComponent.invokeMethodAsync('WaypointAdded', e.latlng.lat, e.latlng.lng);
     });
 }
 
